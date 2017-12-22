@@ -87,7 +87,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
-#include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/security_style_explanations.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/site_instance.h"
@@ -1366,20 +1365,6 @@ void WebContents::DidFailLoad(content::RenderFrameHost* render_frame_host,
       is_main_frame);
 }
 
-void WebContents::DidGetResourceResponseStart(
-    const content::ResourceRequestDetails& details) {
-  const net::HttpResponseHeaders* headers = details.headers.get();
-  Emit("did-get-response-details",
-       details.socket_address.IsEmpty(),
-       details.url,
-       details.original_url,
-       details.http_response_code,
-       details.method,
-       details.referrer,
-       headers,
-       ResourceTypeToString(details.resource_type));
-}
-
 void WebContents::DidStartLoading() {
   Emit("did-start-loading");
 }
@@ -1406,6 +1391,14 @@ void WebContents::DidStartNavigation(
 void WebContents::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   Emit("did-finish-navigation", navigation_handle);
+
+  // const net::HttpResponseHeaders* headers =
+  // navigation_handle->GetResponseHeaders();
+  // Emit("did-get-response-details",
+  // navigation_handle->GetSocketAddress().IsEmpty(),
+  // navigation_handle->GetURL(), navigation_handle->GetPreviousURL(),
+  // headers->response_code(), navigation_handle->IsPost() ? "POST" : "GET",
+  // navigation_handle->GetReferrer().url, headers, /*resourcetypetostring*/);
 
   // deprecated event handling
   bool is_main_frame = navigation_handle->IsInMainFrame();
