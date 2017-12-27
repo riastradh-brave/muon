@@ -18,6 +18,7 @@
 #include "chrome/browser/component_updater/crl_set_component_installer.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/notifications/notification_ui_manager_stub.h"
+#include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/prefs/chrome_command_line_pref_store.h"
 #include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/printing/print_job_manager.h"
@@ -56,7 +57,6 @@
 #include "chrome/browser/chrome_device_client.h"
 #include "chrome/browser/devtools/remote_debugging_server.h"
 #include "chrome/browser/gpu/gpu_mode_manager.h"
-#include "chrome/browser/gpu/gpu_profile_cache.h"
 #include "chrome/browser/icon_manager.h"
 #include "chrome/browser/intranet_redirect_detector.h"
 #include "chrome/browser/io_thread.h"
@@ -70,7 +70,6 @@
 #include "components/network_time/network_time_tracker.h"
 #include "components/net_log/chrome_net_log.h"
 #include "components/physical_web/data_source/physical_web_data_source.h"
-#include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/subresource_filter/content/browser/content_ruleset_service.h"
 #include "services/preferences/public/cpp/in_process_service_factory.h"
 #include "chrome/browser/component_updater/supervised_user_whitelist_installer.h"
@@ -83,7 +82,6 @@
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "atom/browser/extensions/atom_extensions_browser_client.h"
 #include "chrome/browser/extensions/event_router_forwarder.h"
-#include "chrome/common/extensions/extension_process_policy.h"
 #include "chrome/common/extensions/chrome_extensions_client.h"
 #include "components/storage_monitor/storage_monitor.h"
 #include "extensions/common/constants.h"
@@ -563,7 +561,8 @@ WatchDogThread* BrowserProcessImpl::watchdog_thread() {
   return nullptr;
 }
 
-policy::BrowserPolicyConnector* BrowserProcessImpl::browser_policy_connector() {
+policy::ChromeBrowserPolicyConnector*
+BrowserProcessImpl::browser_policy_connector() {
   NOTIMPLEMENTED();
   return nullptr;
 }
@@ -578,11 +577,6 @@ IconManager* BrowserProcessImpl::icon_manager() {
 }
 
 GpuModeManager* BrowserProcessImpl::gpu_mode_manager() {
-  NOTIMPLEMENTED();
-  return nullptr;
-}
-
-GpuProfileCache* BrowserProcessImpl::gpu_profile_cache() {
   NOTIMPLEMENTED();
   return nullptr;
 }
