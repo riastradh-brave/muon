@@ -120,7 +120,7 @@ class NativeWindowViews : public NativeWindow,
   void SetVisibleOnAllWorkspaces(bool visible) override;
   bool IsVisibleOnAllWorkspaces() override;
 
-  gfx::NativeView GetNativeView() override;
+  gfx::AcceleratedWidget GetAcceleratedWidget() override;
 
 #if defined(OS_WIN)
   void SetIcon(HICON small_icon, HICON app_icon);
