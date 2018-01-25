@@ -249,7 +249,7 @@ NativeWindowViews::NativeWindowViews(
   bool use_dark_theme = false;
   if (options.Get(options::kDarkTheme, &use_dark_theme) && use_dark_theme) {
     XDisplay* xdisplay = gfx::GetXDisplay();
-    XChangeProperty(xdisplay, GetAcceleratedWidget(),
+    XChangeProperty(xdisplay, GetNativeView(),
                     XInternAtom(xdisplay, "_GTK_THEME_VARIANT", x11::False),
                     XInternAtom(xdisplay, "UTF8_STRING", x11::False),
                     8, PropModeReplace,
@@ -279,12 +279,12 @@ NativeWindowViews::NativeWindowViews(
       state_atom_list.push_back(GetAtom("_NET_WM_STATE_MODAL"));
   }
 
-  ui::SetAtomArrayProperty(GetAcceleratedWidget(), "_NET_WM_STATE", "ATOM",
+  ui::SetAtomArrayProperty(GetNativeView(), "_NET_WM_STATE", "ATOM",
                            state_atom_list);
 
   // Set the _NET_WM_WINDOW_TYPE.
   if (!window_type.empty())
-    SetWindowType(GetAcceleratedWidget(), window_type);
+    SetWindowType(GetNativeView(), window_type);
 #endif
 
   AddChildView(web_view_);
@@ -303,16 +303,16 @@ NativeWindowViews::NativeWindowViews(
     // We should not show a frame for transparent window.
     if (!thick_frame_)
       frame_style &= ~(WS_THICKFRAME | WS_CAPTION);
-    ::SetWindowLong(GetAcceleratedWidget(), GWL_STYLE, frame_style);
+    ::SetWindowLong(GetNativeView(), GWL_STYLE, frame_style);
   }
 
-  LONG ex_style = ::GetWindowLong(GetAcceleratedWidget(), GWL_EXSTYLE);
+  LONG ex_style = ::GetWindowLong(GetNativeView(), GWL_EXSTYLE);
   // Window without thick frame has to have WS_EX_COMPOSITED style.
   if (!thick_frame_)
     ex_style |= WS_EX_COMPOSITED;
   if (window_type == "toolbar")
     ex_style |= WS_EX_TOOLWINDOW;
-  ::SetWindowLong(GetAcceleratedWidget(), GWL_EXSTYLE, ex_style);
+  ::SetWindowLong(GetNativeView(), GWL_EXSTYLE, ex_style);
 #endif
 
   // TODO(zcbenz): This was used to force using native frame on Windows 2003, we
@@ -368,7 +368,7 @@ void NativeWindowViews::Focus(bool focus) {
     window_->Activate();
 #elif defined(USE_X11)
     // The "Activate" implementation of Chromium is not reliable on Linux.
-    ::Window window = GetAcceleratedWidget();
+    ::Window window = GetNativeView();
     XDisplay* xdisplay = gfx::GetXDisplay();
     SendClientEvent(xdisplay, window, "_NET_ACTIVE_WINDOW");
     XMapRaised(xdisplay, window);
@@ -431,7 +431,7 @@ bool NativeWindowViews::IsVisible() {
 
 bool NativeWindowViews::IsEnabled() {
 #if defined(OS_WIN)
-  return ::IsWindowEnabled(GetAcceleratedWidget());
+  return ::IsWindowEnabled(GetNativeView());
 #elif defined(USE_X11)
   return !event_disabler_.get();
 #endif
@@ -603,7 +603,7 @@ void NativeWindowViews::SetContentSizeConstraints(
 void NativeWindowViews::SetResizable(bool resizable) {
 #if defined(OS_WIN)
   if (thick_frame_)
-    FlipWindowStyle(GetAcceleratedWidget(), resizable, WS_THICKFRAME);
+    FlipWindowStyle(GetNativeView(), resizable, WS_THICKFRAME);
 #elif defined(USE_X11)
   if (resizable != resizable_) {
     // On Linux there is no "resizable" property of a window, we have to set
@@ -626,7 +626,7 @@ void NativeWindowViews::SetResizable(bool resizable) {
 bool NativeWindowViews::IsResizable() {
 #if defined(OS_WIN)
   if (thick_frame_) {
-    return ::GetWindowLong(GetAcceleratedWidget(), GWL_STYLE) & WS_THICKFRAME;
+    return ::GetWindowLong(GetNativeView(), GWL_STYLE) & WS_THICKFRAME;
   } else {
     return CanResize();
   }
@@ -649,14 +649,14 @@ bool NativeWindowViews::IsMovable() {
 
 void NativeWindowViews::SetMinimizable(bool minimizable) {
 #if defined(OS_WIN)
-  FlipWindowStyle(GetAcceleratedWidget(), minimizable, WS_MINIMIZEBOX);
+  FlipWindowStyle(GetNativeView(), minimizable, WS_MINIMIZEBOX);
 #endif
   minimizable_ = minimizable;
 }
 
 bool NativeWindowViews::IsMinimizable() {
 #if defined(OS_WIN)
-  return ::GetWindowLong(GetAcceleratedWidget(), GWL_STYLE) & WS_MINIMIZEBOX;
+  return ::GetWindowLong(GetNativeView(), GWL_STYLE) & WS_MINIMIZEBOX;
 #else
   return true;  // Not implemented on Linux.
 #endif
@@ -664,14 +664,14 @@ bool NativeWindowViews::IsMinimizable() {
 
 void NativeWindowViews::SetMaximizable(bool maximizable) {
 #if defined(OS_WIN)
-  FlipWindowStyle(GetAcceleratedWidget(), maximizable, WS_MAXIMIZEBOX);
+  FlipWindowStyle(GetNativeView(), maximizable, WS_MAXIMIZEBOX);
 #endif
   maximizable_ = maximizable;
 }
 
 bool NativeWindowViews::IsMaximizable() {
 #if defined(OS_WIN)
-  return ::GetWindowLong(GetAcceleratedWidget(), GWL_STYLE) & WS_MAXIMIZEBOX;
+  return ::GetWindowLong(GetNativeView(), GWL_STYLE) & WS_MAXIMIZEBOX;
 #else
   return true;  // Not implemented on Linux.
 #endif
@@ -687,7 +687,7 @@ bool NativeWindowViews::IsFullScreenable() {
 
 void NativeWindowViews::SetClosable(bool closable) {
 #if defined(OS_WIN)
-  HMENU menu = GetSystemMenu(GetAcceleratedWidget(), false);
+  HMENU menu = GetSystemMenu(GetNativeView(), false);
   if (closable) {
     EnableMenuItem(menu, SC_CLOSE, MF_BYCOMMAND | MF_ENABLED);
   } else {
@@ -698,7 +698,7 @@ void NativeWindowViews::SetClosable(bool closable) {
 
 bool NativeWindowViews::IsClosable() {
 #if defined(OS_WIN)
-  HMENU menu = GetSystemMenu(GetAcceleratedWidget(), false);
+  HMENU menu = GetSystemMenu(GetNativeView(), false);
   MENUITEMINFO info;
   memset(&info, 0, sizeof(info));
   info.cbSize = sizeof(info);
@@ -739,7 +739,7 @@ void NativeWindowViews::FlashFrame(bool flash) {
   if (!flash) {
     FLASHWINFO fwi;
     fwi.cbSize = sizeof(fwi);
-    fwi.hwnd = GetAcceleratedWidget();
+    fwi.hwnd = GetNativeView();
     fwi.dwFlags = FLASHW_STOP;
     fwi.uCount = 0;
     FlashWindowEx(&fwi);
@@ -758,13 +758,13 @@ void NativeWindowViews::SetSkipTaskbar(bool skip) {
       FAILED(taskbar->HrInit()))
     return;
   if (skip) {
-    taskbar->DeleteTab(GetAcceleratedWidget());
+    taskbar->DeleteTab(GetNativeView());
   } else {
-    taskbar->AddTab(GetAcceleratedWidget());
-    taskbar_host_.RestoreThumbarButtons(GetAcceleratedWidget());
+    taskbar->AddTab(GetNativeView());
+    taskbar_host_.RestoreThumbarButtons(GetNativeView());
   }
 #elif defined(USE_X11)
-  SetWMSpecState(GetAcceleratedWidget(), skip,
+  SetWMSpecState(GetNativeView(), skip,
                  GetAtom("_NET_WM_STATE_SKIP_TASKBAR"));
 #endif
 }
@@ -786,7 +786,7 @@ void NativeWindowViews::SetBackgroundColor(const std::string& color_name) {
   // Set the background color of native window.
   HBRUSH brush = CreateSolidBrush(skia::SkColorToCOLORREF(background_color));
   ULONG_PTR previous_brush = SetClassLongPtr(
-      GetAcceleratedWidget(),
+      GetNativeView(),
       GCLP_HBRBACKGROUND,
       reinterpret_cast<LONG_PTR>(brush));
   if (previous_brush)
@@ -808,19 +808,19 @@ bool NativeWindowViews::HasShadow() {
 
 void NativeWindowViews::SetIgnoreMouseEvents(bool ignore) {
 #if defined(OS_WIN)
-  LONG ex_style = ::GetWindowLong(GetAcceleratedWidget(), GWL_EXSTYLE);
+  LONG ex_style = ::GetWindowLong(GetNativeView(), GWL_EXSTYLE);
   if (ignore)
     ex_style |= (WS_EX_TRANSPARENT | WS_EX_LAYERED);
   else
     ex_style &= ~(WS_EX_TRANSPARENT | WS_EX_LAYERED);
-  ::SetWindowLong(GetAcceleratedWidget(), GWL_EXSTYLE, ex_style);
+  ::SetWindowLong(GetNativeView(), GWL_EXSTYLE, ex_style);
 #elif defined(USE_X11)
   if (ignore) {
     XRectangle r = {0, 0, 1, 1};
-    XShapeCombineRectangles(gfx::GetXDisplay(), GetAcceleratedWidget(),
+    XShapeCombineRectangles(gfx::GetXDisplay(), GetNativeView(),
                             ShapeInput, 0, 0, &r, 1, ShapeSet, YXBanded);
   } else {
-    XShapeCombineMask(gfx::GetXDisplay(), GetAcceleratedWidget(),
+    XShapeCombineMask(gfx::GetXDisplay(), GetNativeView(),
                       ShapeInput, 0, 0, x11::None, ShapeSet);
   }
 #endif
@@ -829,18 +829,18 @@ void NativeWindowViews::SetIgnoreMouseEvents(bool ignore) {
 void NativeWindowViews::SetContentProtection(bool enable) {
 #if defined(OS_WIN)
   DWORD affinity = enable ? WDA_MONITOR : WDA_NONE;
-  ::SetWindowDisplayAffinity(GetAcceleratedWidget(), affinity);
+  ::SetWindowDisplayAffinity(GetNativeView(), affinity);
 #endif
 }
 
 void NativeWindowViews::SetFocusable(bool focusable) {
 #if defined(OS_WIN)
-  LONG ex_style = ::GetWindowLong(GetAcceleratedWidget(), GWL_EXSTYLE);
+  LONG ex_style = ::GetWindowLong(GetNativeView(), GWL_EXSTYLE);
   if (focusable)
     ex_style &= ~WS_EX_NOACTIVATE;
   else
     ex_style |= WS_EX_NOACTIVATE;
-  ::SetWindowLong(GetAcceleratedWidget(), GWL_EXSTYLE, ex_style);
+  ::SetWindowLong(GetNativeView(), GWL_EXSTYLE, ex_style);
   SetSkipTaskbar(!focusable);
   Focus(false);
 #endif
@@ -915,20 +915,20 @@ void NativeWindowViews::SetParentWindow(NativeWindow* parent) {
 #if defined(USE_X11)
   XDisplay* xdisplay = gfx::GetXDisplay();
   XSetTransientForHint(
-      xdisplay, GetAcceleratedWidget(),
-      parent? parent->GetAcceleratedWidget() : DefaultRootWindow(xdisplay));
+      xdisplay, GetNativeView(),
+      parent? parent->GetNativeView() : DefaultRootWindow(xdisplay));
 #elif defined(OS_WIN) && defined(DEBUG)
   // Should work, but does not, it seems that the views toolkit doesn't support
   // reparenting on desktop.
   if (parent) {
-    ::SetParent(GetAcceleratedWidget(), parent->GetAcceleratedWidget());
+    ::SetParent(GetNativeView(), parent->GetNativeView());
     views::Widget::ReparentNativeView(GetNativeWindow(),
                                       parent->GetNativeWindow());
     wm::AddTransientChild(parent->GetNativeWindow(), GetNativeWindow());
   } else {
     if (!GetNativeWindow()->parent())
       return;
-    ::SetParent(GetAcceleratedWidget(), NULL);
+    ::SetParent(GetNativeView(), NULL);
     views::Widget::ReparentNativeView(GetNativeWindow(), nullptr);
     wm::RemoveTransientChild(GetNativeWindow()->parent(), GetNativeWindow());
   }
@@ -942,7 +942,7 @@ gfx::NativeWindow NativeWindowViews::GetNativeWindow() const {
 void NativeWindowViews::SetProgressBar(
     double progress, NativeWindow::ProgressState state) {
 #if defined(OS_WIN)
-  taskbar_host_.SetProgressBar(GetAcceleratedWidget(), progress, state);
+  taskbar_host_.SetProgressBar(GetNativeView(), progress, state);
 #elif defined(USE_X11)
   if (unity::IsRunning()) {
     unity::SetProgressFraction(progress);
@@ -953,7 +953,7 @@ void NativeWindowViews::SetProgressBar(
 void NativeWindowViews::SetOverlayIcon(const gfx::Image& overlay,
                                        const std::string& description) {
 #if defined(OS_WIN)
-  taskbar_host_.SetOverlayIcon(GetAcceleratedWidget(), overlay, description);
+  taskbar_host_.SetOverlayIcon(GetNativeView(), overlay, description);
 #endif
 }
 
@@ -999,14 +999,14 @@ bool NativeWindowViews::IsVisibleOnAllWorkspaces() {
   // determine whether the current window is visible on all workspaces.
   XAtom sticky_atom = GetAtom("_NET_WM_STATE_STICKY");
   std::vector<XAtom> wm_states;
-  ui::GetAtomArrayProperty(GetAcceleratedWidget(), "_NET_WM_STATE", &wm_states);
+  ui::GetAtomArrayProperty(GetNativeView(), "_NET_WM_STATE", &wm_states);
   return std::find(wm_states.begin(),
                    wm_states.end(), sticky_atom) != wm_states.end();
 #endif
   return false;
 }
 
-gfx::AcceleratedWidget NativeWindowViews::GetAcceleratedWidget() {
+gfx::NativeView NativeWindowViews::GetNativeView() {
   return GetNativeWindow()->GetHost()->GetAcceleratedWidget();
 }
 
@@ -1016,7 +1016,7 @@ void NativeWindowViews::SetIcon(HICON window_icon, HICON app_icon) {
   window_icon_ = base::win::ScopedHICON(CopyIcon(window_icon));
   app_icon_ = base::win::ScopedHICON(CopyIcon(app_icon));
 
-  HWND hwnd = GetAcceleratedWidget();
+  HWND hwnd = GetNativeView();
   SendMessage(hwnd, WM_SETICON, ICON_SMALL,
               reinterpret_cast<LPARAM>(window_icon_.get()));
   SendMessage(hwnd, WM_SETICON, ICON_BIG,
@@ -1025,7 +1025,7 @@ void NativeWindowViews::SetIcon(HICON window_icon, HICON app_icon) {
 #elif defined(USE_X11)
 void NativeWindowViews::SetIcon(const gfx::ImageSkia& icon) {
   views::DesktopWindowTreeHostX11* tree_host =
-      views::DesktopWindowTreeHostX11::GetHostForXID(GetAcceleratedWidget());
+      views::DesktopWindowTreeHostX11::GetHostForXID(GetNativeView());
   static_cast<views::DesktopWindowTreeHost*>(tree_host)->SetWindowIcons(
       icon, icon);
 }
@@ -1044,10 +1044,10 @@ void NativeWindowViews::SetEnabled(bool enable) {
   }
 
 #if defined(OS_WIN)
-  ::EnableWindow(GetAcceleratedWidget(), enable);
+  ::EnableWindow(GetNativeView(), enable);
 #elif defined(USE_X11)
   views::DesktopWindowTreeHostX11* tree_host =
-      views::DesktopWindowTreeHostX11::GetHostForXID(GetAcceleratedWidget());
+      views::DesktopWindowTreeHostX11::GetHostForXID(GetNativeView());
   if (enable) {
     tree_host->RemoveEventRewriter(event_disabler_.get());
     event_disabler_.reset();
@@ -1193,7 +1193,7 @@ gfx::Rect NativeWindowViews::ContentBoundsToWindowBounds(
 
   gfx::Rect window_bounds(bounds);
 #if defined(OS_WIN)
-  HWND hwnd = GetAcceleratedWidget();
+  HWND hwnd = GetNativeView();
   gfx::Rect dpi_bounds = display::win::ScreenWin::DIPToScreenRect(hwnd, bounds);
   window_bounds = display::win::ScreenWin::ScreenToDIPRect(
       hwnd,
@@ -1214,7 +1214,7 @@ gfx::Rect NativeWindowViews::WindowBoundsToContentBounds(
 
   gfx::Rect content_bounds(bounds);
 #if defined(OS_WIN)
-  HWND hwnd = GetAcceleratedWidget();
+  HWND hwnd = GetNativeView();
   content_bounds.set_size(
       display::win::ScreenWin::DIPToScreenSize(hwnd, content_bounds.size()));
   RECT rect;
