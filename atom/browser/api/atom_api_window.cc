@@ -784,9 +784,9 @@ bool Window::IsModal() const {
 }
 
 v8::Local<v8::Value> Window::GetNativeWindowHandle() {
-  gfx::AcceleratedWidget handle = window_->GetAcceleratedWidget();
+  gfx::NativeView handle = window_->GetAcceleratedWidget();
   return ToBuffer(
-      isolate(), static_cast<void*>(&handle), sizeof(gfx::AcceleratedWidget));
+      isolate(), static_cast<void*>(&handle), sizeof(gfx::NativeView));
 }
 
 void Window::SetVisibleOnAllWorkspaces(bool visible) {

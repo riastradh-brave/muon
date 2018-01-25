@@ -1,3 +1,4 @@
+
 // Copyright (c) 2013 GitHub, Inc.
 // Use of this source code is governed by the MIT license that can be
 // found in the LICENSE file.
@@ -1103,9 +1104,8 @@ ui::WindowShowState NativeWindowMac::GetRestoredState() const {
   return ui::SHOW_STATE_NORMAL;
 }
 
-gfx::AcceleratedWidget NativeWindowMac::GetAcceleratedWidget() {
-  return 0;
-//  return inspectable_web_contents()->GetView()->GetNativeView();
+gfx::NativeView NativeWindowMac::GetAcceleratedWidget() {
+  return inspectable_web_contents()->GetView()->GetNativeView();
 }
 
 void NativeWindowMac::SetProgressBar(double progress, const NativeWindow::ProgressState state) {

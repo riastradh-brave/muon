@@ -96,7 +96,7 @@ class NativeWindowMac : public NativeWindow,
   gfx::NativeWindow GetNativeWindow() const override;
   gfx::Rect GetRestoredBounds() const override;
   ui::WindowShowState GetRestoredState() const override;
-  gfx::AcceleratedWidget GetAcceleratedWidget() override;
+  gfx::NativeView GetAcceleratedWidget() override;
   void SetProgressBar(double progress, const ProgressState state) override;
   void SetOverlayIcon(const gfx::Image& overlay,
                       const std::string& description) override;
